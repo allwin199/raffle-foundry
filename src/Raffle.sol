@@ -28,6 +28,7 @@ pragma solidity 0.8.20;
 //////////////////////////////////////////////////////////
 import {VRFCoordinatorV2Interface} from "@chainlink/contracts/src/v0.8/interfaces/VRFCoordinatorV2Interface.sol";
 import {VRFConsumerBaseV2} from "@chainlink/contracts/src/v0.8/VRFConsumerBaseV2.sol";
+import {AutomationCompatible} from "@chainlink/contracts/src/v0.8/AutomationCompatible.sol";
 
 //////////////////////////////////////////////////////////
 ////////////////////  Custom Errors  /////////////////////
@@ -35,12 +36,13 @@ import {VRFConsumerBaseV2} from "@chainlink/contracts/src/v0.8/VRFConsumerBaseV2
 error Raffle__NotEnoughETHSent();
 error Raffle__Sending_RaffleAmountTo_WinnerFailed();
 error Raffle__NotOpen();
+error Raffle__UpkeepNotNeeded(uint256 currentBalance, uint256 numPlayers, uint256 raffleState);
 
 /// @title A sample Raffle Contract
 /// @author Prince Allwin
 /// @notice This contract is for creating a sample raffle
 /// @dev Implements Chainlink VRFv2 and Automation
-contract Raffle is VRFConsumerBaseV2 {
+contract Raffle is VRFConsumerBaseV2, AutomationCompatible {
     //////////////////////////////////////////////////////////
     ////////////////  Type Declarations  /////////////////////
     //////////////////////////////////////////////////////////
@@ -120,11 +122,9 @@ contract Raffle is VRFConsumerBaseV2 {
         emit EnteredRaffle(msg.sender);
     }
 
-    function requestRandomWords() private {
-        i_vRFCoordinatorV2Interface.requestRandomWords(
-            i_gasLane, i_subscriptionId, REQUEST_CONFIRMATIONS, i_callbackGasLimit, NUM_WORDS
-        );
-    }
+    //////////////////////////////////////////////////////////
+    ///////////////////  Chainlink VRF  //////////////////////
+    //////////////////////////////////////////////////////////
 
     /// @dev follows CEI -> Checks, Effects, Interactions
     /// @dev we will call requestRandomWords()
@@ -162,24 +162,53 @@ contract Raffle is VRFConsumerBaseV2 {
         }
     }
 
-    // 1. Get a random number
-    // 2. Use the random number to pick a player
-    // 3. Be automatically called
-    function pickWinner() external {
-        // check to see if enough time has passed
-        // to get the current timestamp block.timestamp can be used
+    /// @dev info about Raffle Timing
+    // let's say interval = 60s
+    // lastWinnerPickedTimeStamp = 2000
+    // currentTimeStamp = 3000
+    // lastWinnerPickedTimeStamp + i_interval = 2000+60 = 2060
+    // it is not greater than currentTimeStamp
+    // therfore pickWinner will not be called
+
+    //////////////////////////////////////////////////////////
+    ///////////////  Chainlink Automation  ///////////////////
+    //////////////////////////////////////////////////////////
+    /// @dev This is the function that the Chainlink Automation node call to see if it's time to perform an upkeep
+    function checkUpkeep(bytes memory /*checkdata*/ )
+        public
+        view
+        override
+        returns (bool upkeepNeeded, bytes memory /*performData*/ )
+    {
+        // checkUpkeep will return true when the below conditions are true
+        // 1. lastWinnerPickedTimeStamp + interval should be greater than currentTimeStamp
+        // 2. It should have atleast 1 player & should have ETH
+        // 3. Raffle is in OPEN state
+        // 4. (Implicitly) The subscription is funded with LINK
+
         uint256 currentTimeStamp = block.timestamp;
-        if (s_lastWinnerPickedTimeStamp + i_interval > currentTimeStamp) {
-            // before picking up winner, we have to close to raffle otherwise someone could enter inbetween
-            s_currentRaffleState = RaffleState.CALCULATING;
-            requestRandomWords();
+        bool enoughTimeHasPassed = s_lastWinnerPickedTimeStamp + i_interval >= currentTimeStamp;
+        bool hasPlayers = s_players.length > 0;
+        bool hasBalance = address(this).balance > 0;
+        bool raffleIsOpen = s_currentRaffleState == RaffleState.OPEN;
+        upkeepNeeded = (enoughTimeHasPassed && hasPlayers && hasBalance && raffleIsOpen);
+        return (upkeepNeeded, "");
+    }
+
+    /// @dev when checkUpkeep return true, performUpkeep will be called
+    /// @dev Inside performUpkeep we have requestRandomWords
+    function performUpkeep(bytes calldata /*performData*/ ) external override {
+        (bool upkeepNeeded,) = checkUpkeep("");
+        if (!upkeepNeeded) {
+            revert Raffle__UpkeepNotNeeded(address(this).balance, s_players.length, uint256(s_currentRaffleState));
         }
-        // let's say interval = 60s
-        // lastWinnerPickedTimeStamp = 2000
-        // currentTimeStamp = 3000
-        // lastWinnerPickedTimeStamp + i_interval = 2000+60 = 2060
-        // it is not greater than currentTimeStamp
-        // therfore pickWinner will not be called
+        /// @dev the reason we are calling checkUpkeep inside the performUpkeep is,
+        /// @dev since performUpkeep is an external function anyone can call this
+        /// @dev since s_currentRaffleState is custom type, we are typecasting it to uint256
+
+        i_vRFCoordinatorV2Interface.requestRandomWords(
+            i_gasLane, i_subscriptionId, REQUEST_CONFIRMATIONS, i_callbackGasLimit, NUM_WORDS
+        );
     }
 
     //////////////////////////////////////////////////////////
