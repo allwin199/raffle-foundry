@@ -20,6 +20,8 @@
 // internal & private view & pure functions
 // external & public view & pure functions
 
+///@dev Refer RaffleWorkflow.md
+
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.20;
 
