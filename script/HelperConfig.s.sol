@@ -7,7 +7,7 @@ pragma solidity 0.8.20;
 //////////////////////  Imports  /////////////////////////
 //////////////////////////////////////////////////////////
 import {Script, console} from "forge-std/Script.sol";
-import {VRFCoordinatorV2Mock} from "../test/mocks/VRFCoordinatorV2Mock.sol";
+import {VRFCoordinatorV2Mock} from "@chainlink/contracts/src/v0.8/vrf/mocks/VRFCoordinatorV2Mock.sol";
 
 /// @title HelperConfig contract
 /// @author Prince Allwin
@@ -86,6 +86,8 @@ contract HelperConfig is Script {
         // Let's fund the subscription
         vRFCoordinatorV2Mock.fundSubscription(subId, fundingAmount);
         console.log("Subscription Id : %s funded with %s", subId, fundingAmount);
+
+        // Creating
 
         NetworkConfig memory anvilConfig = NetworkConfig({
             entranceFee: ENTRANCE_FEE,

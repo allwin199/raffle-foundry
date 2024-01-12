@@ -28,9 +28,9 @@ pragma solidity 0.8.20;
 //////////////////////////////////////////////////////////
 //////////////////////  Imports  /////////////////////////
 //////////////////////////////////////////////////////////
-import {VRFCoordinatorV2Interface} from "@chainlink/contracts/src/v0.8/interfaces/VRFCoordinatorV2Interface.sol";
-import {VRFConsumerBaseV2} from "@chainlink/contracts/src/v0.8/VRFConsumerBaseV2.sol";
-import {AutomationCompatible} from "@chainlink/contracts/src/v0.8/AutomationCompatible.sol";
+import {VRFCoordinatorV2Interface} from "@chainlink/contracts/src/v0.8/vrf/interfaces/VRFCoordinatorV2Interface.sol";
+import {VRFConsumerBaseV2} from "@chainlink/contracts/src/v0.8/vrf/VRFConsumerBaseV2.sol";
+import {AutomationCompatible} from "@chainlink/contracts/src/v0.8/automation/AutomationCompatible.sol";
 
 /// @title A sample Raffle Contract
 /// @author Prince Allwin
@@ -203,7 +203,7 @@ contract Raffle is VRFConsumerBaseV2, AutomationCompatible {
         /// pick winner will be called
 
         uint256 currentTimeStamp = block.timestamp;
-        // bool enoughTimeHasPassed = s_lastWinnerPickedTimeStamp + i_interval >= currentTimeStamp;
+        // bool enoughTimeHasPassed = (s_lastWinnerPickedTimeStamp + i_interval) >= currentTimeStamp;
         bool enoughTimeHasPassed = (currentTimeStamp - s_lastWinnerPickedTimeStamp) >= i_interval;
         bool hasPlayers = s_players.length > 0;
         bool hasBalance = address(this).balance > 0;
