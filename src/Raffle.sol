@@ -20,7 +20,7 @@
 // internal & private view & pure functions
 // external & public view & pure functions
 
-///@dev Refer RaffleWorkflow.md
+/// @dev Refer RaffleWorkflow.md
 
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.20;
@@ -32,19 +32,19 @@ import {VRFCoordinatorV2Interface} from "@chainlink/contracts/src/v0.8/interface
 import {VRFConsumerBaseV2} from "@chainlink/contracts/src/v0.8/VRFConsumerBaseV2.sol";
 import {AutomationCompatible} from "@chainlink/contracts/src/v0.8/AutomationCompatible.sol";
 
-//////////////////////////////////////////////////////////
-////////////////////  Custom Errors  /////////////////////
-//////////////////////////////////////////////////////////
-error Raffle__NotEnoughETHSent();
-error Raffle__Sending_RaffleAmountTo_WinnerFailed();
-error Raffle__NotOpen();
-error Raffle__UpkeepNotNeeded(uint256 currentBalance, uint256 numPlayers, uint256 raffleState);
-
 /// @title A sample Raffle Contract
 /// @author Prince Allwin
 /// @notice This contract is for creating a sample raffle
 /// @dev Implements Chainlink VRFv2 and Automation
 contract Raffle is VRFConsumerBaseV2, AutomationCompatible {
+    //////////////////////////////////////////////////////////
+    ////////////////////  Custom Errors  /////////////////////
+    //////////////////////////////////////////////////////////
+    error Raffle__NotEnoughETHSent();
+    error Raffle__Sending_RaffleAmountTo_WinnerFailed();
+    error Raffle__NotOpen();
+    error Raffle__UpkeepNotNeeded(uint256 currentBalance, uint256 numPlayers, uint256 raffleState);
+
     //////////////////////////////////////////////////////////
     ////////////////  Type Declarations  /////////////////////
     //////////////////////////////////////////////////////////
@@ -128,6 +128,8 @@ contract Raffle is VRFConsumerBaseV2, AutomationCompatible {
     ///////////////////  Chainlink VRF  //////////////////////
     //////////////////////////////////////////////////////////
 
+    /// @dev Refer VRFDetails.md
+
     /// @dev follows CEI -> Checks, Effects, Interactions
     /// @dev we will call requestRandomWords()
     /// @dev fulfillRandomWords() will be called by chainlink node
@@ -188,13 +190,27 @@ contract Raffle is VRFConsumerBaseV2, AutomationCompatible {
         // 3. Raffle is in OPEN state
         // 4. (Implicitly) The subscription is funded with LINK
 
+        /// @dev block.timestamp will denote the current time in seconds
+        /// @dev s_lastTimeStamp will denote when was the previous raffle draw
+        /// @dev to pick the winner again, enough time should be passed
+        /// @dev all time units are measured in seconds
+
+        /// eg: block.timestamp = 1000; s_lastTimeStamp = 500; i_interval = 600;
+        /// 1000-500 = 500; 500 > 600 will be false, not enough time has passed;
+
+        /// eg: block.timestamp = 1200; s_lastTimeStamp = 500; i_interval = 600;
+        /// 1200-500 = 700; 700 > 600 will be true, enough time has passed;
+        /// pick winner will be called
+
         uint256 currentTimeStamp = block.timestamp;
-        bool enoughTimeHasPassed = s_lastWinnerPickedTimeStamp + i_interval >= currentTimeStamp;
+        // bool enoughTimeHasPassed = s_lastWinnerPickedTimeStamp + i_interval >= currentTimeStamp;
+        bool enoughTimeHasPassed = (currentTimeStamp - s_lastWinnerPickedTimeStamp) >= i_interval;
         bool hasPlayers = s_players.length > 0;
         bool hasBalance = address(this).balance > 0;
         bool raffleIsOpen = s_currentRaffleState == RaffleState.OPEN;
         upkeepNeeded = (enoughTimeHasPassed && hasPlayers && hasBalance && raffleIsOpen);
-        return (upkeepNeeded, "");
+        return (upkeepNeeded, "0x0");
+        /// (0x0) refers to blank bytes object
     }
 
     /// @dev when checkUpkeep return true, performUpkeep will be called
@@ -208,6 +224,9 @@ contract Raffle is VRFConsumerBaseV2, AutomationCompatible {
         /// @dev since performUpkeep is an external function anyone can call this
         /// @dev since s_currentRaffleState is custom type, we are typecasting it to uint256
 
+        // change raffle_state to calculating
+        s_currentRaffleState = RaffleState.CALCULATING;
+
         i_vRFCoordinatorV2Interface.requestRandomWords(
             i_gasLane, i_subscriptionId, REQUEST_CONFIRMATIONS, i_callbackGasLimit, NUM_WORDS
         );
@@ -218,5 +237,13 @@ contract Raffle is VRFConsumerBaseV2, AutomationCompatible {
     //////////////////////////////////////////////////////////
     function getEntranceFee() external view returns (uint256) {
         return i_entranceFee;
+    }
+
+    function getRaffleState() external view returns (uint256) {
+        return uint256(s_currentRaffleState);
+    }
+
+    function getPlayer(uint256 playerIndex) external view returns (address) {
+        return s_players[playerIndex];
     }
 }

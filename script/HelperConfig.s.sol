@@ -3,9 +3,15 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.20;
 
+//////////////////////////////////////////////////////////
+//////////////////////  Imports  /////////////////////////
+//////////////////////////////////////////////////////////
 import {Script, console} from "forge-std/Script.sol";
-import {VRFCoordinatorV2Mock} from "@chainlink/contracts/src/v0.8/mocks/VRFCoordinatorV2Mock.sol";
+import {VRFCoordinatorV2Mock} from "../test/mocks/VRFCoordinatorV2Mock.sol";
 
+/// @title HelperConfig contract
+/// @author Prince Allwin
+/// @notice HelperConfig provides necessary to the DeployRaffle contract
 contract HelperConfig is Script {
     struct NetworkConfig {
         uint256 entranceFee;
