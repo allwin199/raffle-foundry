@@ -126,9 +126,11 @@ contract Raffle is VRFConsumerBaseV2 {
         );
     }
 
-    ///@dev we will call requestRandomWords()
-    ///@dev fulfillRandomWords() will be called by chainlink node
+    /// @dev follows CEI -> Checks, Effects, Interactions
+    /// @dev we will call requestRandomWords()
+    /// @dev fulfillRandomWords() will be called by chainlink node
     function fulfillRandomWords(uint256, /*_requestId*/ uint256[] memory randomWords) internal override {
+        // Effects
         uint256 randomNumber = randomWords[0];
         // this randomNumber will be a huge number like 232324233
         // let's say we have 8 players in the raffle
@@ -151,6 +153,8 @@ contract Raffle is VRFConsumerBaseV2 {
         s_currentRaffleState = RaffleState.OPEN;
 
         emit PickedWinner(winner);
+
+        // Interactions
         // send the raffle balance to the winner
         (bool success,) = winner.call{value: address(this).balance}("");
         if (!success) {
