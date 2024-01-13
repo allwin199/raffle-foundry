@@ -133,4 +133,56 @@ contract RaffleTest is Test {
         // refer https://book.getfoundry.sh/forge/cheatcodes?highlight=expect%20emit#cheatcodes
         // examples https://book.getfoundry.sh/cheatcodes/expect-emit?highlight=expect%20emit#examples
     }
+
+    //////////////////////////////////////////////////////////
+    ////////////////////  checkUpkeep  ///////////////////////
+    //////////////////////////////////////////////////////////
+    function test_CheckUpkeep_ReturnsFalse_IfNoBalance() public {
+        // We have to make everything except balance to be true and check whether checkUpkeep returns false
+        // Arrange
+        vm.warp(block.timestamp + interval + 10);
+        vm.roll(block.number + 1);
+
+        // Act
+        (bool upkeepNeeded,) = raffle.checkUpkeep("");
+
+        // Assert
+        assertEq(upkeepNeeded, false);
+    }
+
+    function test_CheckUpkeep_ReturnsFalse_IfNotEnoughHasTimePassed() public playerEntered {
+        // balance, players and raffleState is true only enoughTimeHasPassed will fail
+        // Act
+        (bool upkeepNeeded,) = raffle.checkUpkeep("");
+
+        // Assert
+        assertEq(upkeepNeeded, false);
+    }
+
+    function test_CheckUpkeep_ReturnsFalse_IfRaffleNotOpen() public playerEntered {
+        // enoughTimeHasPassed, balance, players are true only raffleState will fail
+        // Arrange
+        vm.warp(block.timestamp + interval + 10);
+        vm.roll(block.number + 1);
+        raffle.performUpkeep("");
+        // RaffleState will be changed to calculating
+
+        // Act
+        (bool upkeepNeeded,) = raffle.checkUpkeep("");
+
+        // Assert
+        assertEq(upkeepNeeded, false);
+    }
+
+    function test_CheckUpkeep_ReturnsTrue_IfAllConditionsAreMet() public playerEntered {
+        // Arrange
+        vm.warp(block.timestamp + interval + 10);
+        vm.roll(block.number + 1);
+
+        // Act
+        (bool upkeepNeeded,) = raffle.checkUpkeep("");
+
+        // Assert
+        assertEq(upkeepNeeded, true);
+    }
 }

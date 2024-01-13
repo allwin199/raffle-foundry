@@ -92,7 +92,7 @@ contract HelperConfig is Script {
             entranceFee: ENTRANCE_FEE,
             interval: INTERVAL,
             vrfCoordinatorAddress: address(vRFCoordinatorV2Mock), // mocks
-            subscriptionId: 0, // mocks
+            subscriptionId: 0, // If subId is 0 it will be created programatically
             gasLane: 0x474e34a077df58807dbe9c96d3c009b23b3c6d0cce433e59bbf5b34f823bc56c,
             callbackGasLimit: 500000, //500,000 gas
             link: address(mockLinkToken),

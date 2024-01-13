@@ -71,8 +71,9 @@ contract FundSubscription is Script {
 
     function fundSubscriptionUsingConfig() private {
         HelperConfig helperConfig = new HelperConfig();
-        (,, address vrfCoordinatorAddress,,,, address link, address deployer) = helperConfig.activeNetworkConfig();
-        fundSubscription(vrfCoordinatorAddress, 1, link, deployer);
+        (,, address vrfCoordinatorAddress, uint64 subId,,, address link, address deployer) =
+            helperConfig.activeNetworkConfig();
+        fundSubscription(vrfCoordinatorAddress, subId, link, deployer);
     }
 
     function run() external {
