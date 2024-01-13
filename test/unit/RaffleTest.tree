@@ -1,0 +1,37 @@
+RaffleTest.t.sol
+├── Enter Raffle
+├── when msg.value < Entrancefee
+│   └── it should revert with custom error "Raffle__NotEnoughETHSent"
+├── when raffle state is not OPEN
+│   └── it should revert with custom error "Raffle__NotOpen"
+└── when msg.value > EntranceFee and raffle state is OPEN
+    ├── player should be recorded in s_players[]
+    └── it should emit a {EnteredRaffle} event
+
+
+└── checkupkeep
+    └── returns true if below conditions are met
+        ├── enough time has passed from the previous raffle draw
+        ├── raffle state is OPEN
+        ├── raffle has balance
+        └── raffle has players
+
+
+└── performUpkeep
+    ├── when checkupkeep returns false
+    │   └── it should revert with a custom error "Raffle__UpkeepNotNeeded(balance, players, rafflestate)"
+    └── when checkupkeep returns true
+        ├── requestRandomWords fn should be called
+        ├── it should emit requestId
+        └── it should change the raffle state to calculating
+
+
+└── fulFillRandomWords
+    ├── when called without calling performupkeep
+    │   └── it should revert with "nonexistent request" error
+    └── when called after calling performupkeep
+        ├── it should pick the recent winner
+        ├── raffle state should be reset to OPEN
+        ├── players[] should be reset to 0
+        ├── last_timestamp should be updated correctly
+        └── winner should be able to withdraw the entire prize

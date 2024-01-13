@@ -249,9 +249,21 @@ contract RaffleTest is Test {
     //////////////////////////////////////////////////////////
     /////////////////  fulfillRandomWords  ///////////////////
     //////////////////////////////////////////////////////////
+
+    modifier skipFork() {
+        if (block.chainid != 31337) {
+            vm.skip(true);
+        }
+        _;
+    }
+    // since there is no mocks in testnet
+    // below test cases will fail
+    // therfore we are skipping it while testing in testnet
+
     function test_FulfillRandomWords_CanOnlyBeCalled_AfterPerformUpkeep(uint256 randomRequestId)
         public
         playerEnteredAndTimePassed
+        skipFork
     {
         // This is where we try to have the mock call fulfillRandomWords and it should fail
         vm.expectRevert("nonexistent request"); // error from fulfillRandomWords in vrfCoordinator
@@ -267,7 +279,7 @@ contract RaffleTest is Test {
         // foundry will create some random values and test the required functions
     }
 
-    function test_fulfillRandomWords_PicksAWinner_ResetsAndSendMoney() public playerEnteredAndTimePassed {
+    function test_fulfillRandomWords_PicksAWinner_ResetsAndSendMoney() public playerEnteredAndTimePassed skipFork {
         // Arrange
         uint160 additionalEntrants = 5;
 
