@@ -8,6 +8,8 @@ pragma solidity 0.8.20;
 //////////////////////////////////////////////////////////
 import {Script, console} from "forge-std/Script.sol";
 import {VRFCoordinatorV2Mock} from "@chainlink/contracts/src/v0.8/vrf/mocks/VRFCoordinatorV2Mock.sol";
+import {VRFConsumerBaseV2} from "@chainlink/contracts/src/v0.8/vrf/VRFConsumerBaseV2.sol";
+import {MockLinkToken} from "@chainlink/contracts/src/v0.8/mocks/MockLinkToken.sol";
 
 /// @title HelperConfig contract
 /// @author Prince Allwin
@@ -20,6 +22,7 @@ contract HelperConfig is Script {
         uint64 subscriptionId;
         bytes32 gasLane;
         uint32 callbackGasLimit;
+        address link;
     }
 
     NetworkConfig public activeNetworkConfig;
@@ -44,7 +47,8 @@ contract HelperConfig is Script {
             vrfCoordinatorAddress: 0x271682DEB8C4E0901D1a1550aD2e64D568E69909,
             subscriptionId: 0,
             gasLane: 0x8af398995b04c28e9951adb9721ef74c74f93e6a478f39e7e0777be13527e7ef,
-            callbackGasLimit: 500000 //500,000 gas
+            callbackGasLimit: 500000, //500,000 gas
+            link: 0x514910771AF9Ca656af840dff83E8264EcF986CA
         });
 
         return mainnetConfig;
@@ -55,9 +59,10 @@ contract HelperConfig is Script {
             entranceFee: ENTRANCE_FEE,
             interval: INTERVAL,
             vrfCoordinatorAddress: 0x8103B0A8A00be2DDC778e6e7eaa21791Cd364625,
-            subscriptionId: 0,
+            subscriptionId: 0, // If subId is 0 subId will be programatically generated
             gasLane: 0x474e34a077df58807dbe9c96d3c009b23b3c6d0cce433e59bbf5b34f823bc56c,
-            callbackGasLimit: 500000 //500,000 gas
+            callbackGasLimit: 500000, //500,000 gas
+            link: 0x779877A7B0D9E8603169DdbD7836e478b4624789
         });
 
         return sepoliaConfig;
@@ -72,30 +77,22 @@ contract HelperConfig is Script {
         /// @dev https://docs.chain.link/vrf/v2/subscription/examples/test-locally
         uint96 baseFee = 25e17; // 0.25ether
         uint96 gasPriceLink = 1e9; // 1 gwei
-        uint96 fundingAmount = 1000000000000000000;
 
         /// @dev deploying VRFCoordinatorV2Mock contract
+        /// @dev deploying MockLinkToken
         vm.startBroadcast();
         VRFCoordinatorV2Mock vRFCoordinatorV2Mock = new VRFCoordinatorV2Mock(baseFee, gasPriceLink);
+        MockLinkToken mockLinkToken = new MockLinkToken();
         vm.stopBroadcast();
-
-        // Let's get subscirption Id from VRFCoordinatorV2Mock
-        uint64 subId = vRFCoordinatorV2Mock.createSubscription();
-        console.log("Subscription Id : ", subId);
-
-        // Let's fund the subscription
-        vRFCoordinatorV2Mock.fundSubscription(subId, fundingAmount);
-        console.log("Subscription Id : %s funded with %s", subId, fundingAmount);
-
-        // Creating
 
         NetworkConfig memory anvilConfig = NetworkConfig({
             entranceFee: ENTRANCE_FEE,
             interval: INTERVAL,
             vrfCoordinatorAddress: address(vRFCoordinatorV2Mock), // mocks
-            subscriptionId: subId, // mocks
+            subscriptionId: 0, // mocks
             gasLane: 0x474e34a077df58807dbe9c96d3c009b23b3c6d0cce433e59bbf5b34f823bc56c,
-            callbackGasLimit: 500000 //500,000 gas
+            callbackGasLimit: 500000, //500,000 gas
+            link: address(mockLinkToken)
         });
 
         return anvilConfig;
