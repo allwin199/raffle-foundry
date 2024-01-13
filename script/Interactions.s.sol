@@ -1,12 +1,20 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.20;
 
+//////////////////////////////////////////////////////////
+//////////////////////  Imports  /////////////////////////
+//////////////////////////////////////////////////////////
 import {Script, console} from "forge-std/Script.sol";
 import {HelperConfig} from "./HelperConfig.s.sol";
 import {VRFCoordinatorV2Mock} from "@chainlink/contracts/src/v0.8/vrf/mocks/VRFCoordinatorV2Mock.sol";
 import {VRFCoordinatorV2Interface} from "@chainlink/contracts/src/v0.8/vrf/interfaces/VRFCoordinatorV2Interface.sol";
 import {LinkTokenInterface} from "@chainlink/contracts/src/v0.8/shared/interfaces/LinkTokenInterface.sol";
+import {DevOpsTools} from "lib/foundry-devops/src/DevOpsTools.sol";
+import {Raffle} from "../src/Raffle.sol";
 
+//////////////////////////////////////////////////////////
+//////////////  Create Subscription  /////////////////////
+//////////////////////////////////////////////////////////
 contract CreateSubscription is Script {
     function createSubscription(address vrfCoordinatorAddress) public returns (uint64) {
         console.log("Creating Subscription on ChainId:", block.chainid);
@@ -22,7 +30,7 @@ contract CreateSubscription is Script {
 
     function createSubscriptionUsingConfig() private returns (uint64) {
         HelperConfig helperConfig = new HelperConfig();
-        (,, address vrfCoordinatorAddress,,,,) = helperConfig.activeNetworkConfig();
+        (,, address vrfCoordinatorAddress,,,,,) = helperConfig.activeNetworkConfig();
         return createSubscription(vrfCoordinatorAddress);
     }
 
@@ -31,6 +39,9 @@ contract CreateSubscription is Script {
     }
 }
 
+//////////////////////////////////////////////////////////
+////////////////  Fund Subscription  /////////////////////
+//////////////////////////////////////////////////////////
 contract FundSubscription is Script {
     uint96 public constant FUNDING_AMOUNT = 3e18; // 3 ether
 
@@ -59,11 +70,36 @@ contract FundSubscription is Script {
 
     function fundSubscriptionUsingConfig() private {
         HelperConfig helperConfig = new HelperConfig();
-        (,, address vrfCoordinatorAddress,,,, address link) = helperConfig.activeNetworkConfig();
+        (,, address vrfCoordinatorAddress,,,, address link,) = helperConfig.activeNetworkConfig();
         fundSubscription(vrfCoordinatorAddress, 1, link);
     }
 
     function run() external {
         fundSubscriptionUsingConfig();
+    }
+}
+
+//////////////////////////////////////////////////////////
+////////////////////  Add Consumer  //////////////////////
+//////////////////////////////////////////////////////////
+contract AddConsumer is Script {
+    function addConsumer(uint64 subId, address contractToAddToVrf, address vrfCoordinatorAddress) public {
+        console.log("Adding consumer contract: ", contractToAddToVrf);
+        console.log("Using vrfCoordinator: ", vrfCoordinatorAddress);
+        console.log("On ChainID: ", block.chainid);
+        vm.startBroadcast();
+        VRFCoordinatorV2Interface(vrfCoordinatorAddress).addConsumer(subId, contractToAddToVrf);
+        vm.stopBroadcast();
+    }
+
+    function createConsumerUsingConfig(address raffle) private {
+        HelperConfig helperConfig = new HelperConfig();
+        (,, address vrfCoordinatorAddress, uint64 subId,,,,) = helperConfig.activeNetworkConfig();
+        addConsumer(subId, raffle, vrfCoordinatorAddress);
+    }
+
+    function run() external {
+        address raffle = DevOpsTools.get_most_recent_deployment("Raffle", block.chainid);
+        createConsumerUsingConfig(raffle);
     }
 }

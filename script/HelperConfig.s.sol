@@ -23,6 +23,7 @@ contract HelperConfig is Script {
         bytes32 gasLane;
         uint32 callbackGasLimit;
         address link;
+        address deployer;
     }
 
     NetworkConfig public activeNetworkConfig;
@@ -40,7 +41,7 @@ contract HelperConfig is Script {
         }
     }
 
-    function getETHMainnetConfig() private pure returns (NetworkConfig memory) {
+    function getETHMainnetConfig() private view returns (NetworkConfig memory) {
         NetworkConfig memory mainnetConfig = NetworkConfig({
             entranceFee: ENTRANCE_FEE,
             interval: INTERVAL,
@@ -48,13 +49,14 @@ contract HelperConfig is Script {
             subscriptionId: 0,
             gasLane: 0x8af398995b04c28e9951adb9721ef74c74f93e6a478f39e7e0777be13527e7ef,
             callbackGasLimit: 500000, //500,000 gas
-            link: 0x514910771AF9Ca656af840dff83E8264EcF986CA
+            link: 0x514910771AF9Ca656af840dff83E8264EcF986CA,
+            deployer: vm.envAddress("SEPOLIA_KEYCHAIN")
         });
 
         return mainnetConfig;
     }
 
-    function getSepoliaConfig() private pure returns (NetworkConfig memory) {
+    function getSepoliaConfig() private view returns (NetworkConfig memory) {
         NetworkConfig memory sepoliaConfig = NetworkConfig({
             entranceFee: ENTRANCE_FEE,
             interval: INTERVAL,
@@ -62,7 +64,8 @@ contract HelperConfig is Script {
             subscriptionId: 0, // If subId is 0 subId will be programatically generated
             gasLane: 0x474e34a077df58807dbe9c96d3c009b23b3c6d0cce433e59bbf5b34f823bc56c,
             callbackGasLimit: 500000, //500,000 gas
-            link: 0x779877A7B0D9E8603169DdbD7836e478b4624789
+            link: 0x779877A7B0D9E8603169DdbD7836e478b4624789,
+            deployer: vm.envAddress("SEPOLIA_KEYCHAIN")
         });
 
         return sepoliaConfig;
@@ -92,7 +95,8 @@ contract HelperConfig is Script {
             subscriptionId: 0, // mocks
             gasLane: 0x474e34a077df58807dbe9c96d3c009b23b3c6d0cce433e59bbf5b34f823bc56c,
             callbackGasLimit: 500000, //500,000 gas
-            link: address(mockLinkToken)
+            link: address(mockLinkToken),
+            deployer: vm.envAddress("ANVIL_KEYCHAIN")
         });
 
         return anvilConfig;
