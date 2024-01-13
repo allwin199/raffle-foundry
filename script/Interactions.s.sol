@@ -8,14 +8,14 @@ import {VRFCoordinatorV2Interface} from "@chainlink/contracts/src/v0.8/vrf/inter
 import {LinkTokenInterface} from "@chainlink/contracts/src/v0.8/shared/interfaces/LinkTokenInterface.sol";
 
 contract CreateSubscription is Script {
-    function createSubscription(address vrfCoordinatorAddress) private returns (uint64) {
-        console.log("Creating Subscription on ChainId :", block.chainid);
+    function createSubscription(address vrfCoordinatorAddress) public returns (uint64) {
+        console.log("Creating Subscription on ChainId:", block.chainid);
 
         vm.startBroadcast();
         uint64 subId = VRFCoordinatorV2Interface(vrfCoordinatorAddress).createSubscription();
         vm.stopBroadcast();
 
-        console.log("Your Subscription Id :", subId);
+        console.log("Your Subscription Id:", subId);
 
         return subId;
     }
@@ -34,8 +34,10 @@ contract CreateSubscription is Script {
 contract FundSubscription is Script {
     uint96 public constant FUNDING_AMOUNT = 3e18; // 3 ether
 
-    function fundSubscription(address vrfCoordinatorAddress, uint64 subId, address link) private {
-        console.log("Funding Subscription:");
+    function fundSubscription(address vrfCoordinatorAddress, uint64 subId, address link) public {
+        console.log("Funding subscription:", subId);
+        console.log("Using vrfCoordinator:", vrfCoordinatorAddress);
+        console.log("On ChainID:", block.chainid);
         LinkTokenInterface linkToken = LinkTokenInterface(link);
 
         if (block.chainid == 31337) {
@@ -43,13 +45,16 @@ contract FundSubscription is Script {
             VRFCoordinatorV2Mock(vrfCoordinatorAddress).fundSubscription(subId, FUNDING_AMOUNT);
             vm.stopBroadcast();
         } else {
+            console.log(LinkTokenInterface(link).balanceOf(msg.sender));
+            console.log(msg.sender);
+            console.log(LinkTokenInterface(link).balanceOf(address(this)));
+            console.log(address(this));
+
             vm.startBroadcast();
             (bool success) = linkToken.transferAndCall(vrfCoordinatorAddress, FUNDING_AMOUNT, abi.encode(subId));
             console.log("Funding Status:", success);
             vm.stopBroadcast();
         }
-
-        console.log("Funding Completed");
     }
 
     function fundSubscriptionUsingConfig() private {

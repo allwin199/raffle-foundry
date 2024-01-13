@@ -9,14 +9,12 @@ pragma solidity 0.8.20;
 import {Script} from "forge-std/Script.sol";
 import {HelperConfig} from "./HelperConfig.s.sol";
 import {Raffle} from "../src/Raffle.sol";
-import {CreateSubscription} from "./Interactions.s.sol";
+import {CreateSubscription, FundSubscription} from "./Interactions.s.sol";
 
 /// @title Deploy Raffle contract
 /// @author Prince Allwin
 /// @notice Using DeployRaffle contract raffle can be programatically deployed
 contract DeployRaffle is Script {
-    CreateSubscription createSubscription;
-
     function run() external returns (Raffle, HelperConfig) {
         HelperConfig helperConfig = new HelperConfig();
         (
@@ -26,11 +24,17 @@ contract DeployRaffle is Script {
             uint64 subscriptionId,
             bytes32 gasLane,
             uint32 callbackGasLimit,
+            address link
         ) = helperConfig.activeNetworkConfig();
 
         if (subscriptionId == 0) {
-            createSubscription = new CreateSubscription();
-            subscriptionId = createSubscription.run();
+            /// @dev Creating Subscription
+            CreateSubscription createSubscription = new CreateSubscription();
+            subscriptionId = createSubscription.createSubscription(vrfCoordinatorAddress);
+
+            /// @dev Funding Subscription
+            FundSubscription fundSubscription = new FundSubscription();
+            fundSubscription.fundSubscription(vrfCoordinatorAddress, subscriptionId, link);
         }
 
         vm.startBroadcast();
