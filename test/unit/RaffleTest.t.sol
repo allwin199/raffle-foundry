@@ -35,6 +35,7 @@ contract RaffleTest is Test {
     uint64 subscriptionId;
     bytes32 gasLane;
     uint32 callbackGasLimit;
+    address deployerKey;
 
     //////////////////////////////////////////////////////////
     //////////////////////   Events  /////////////////////////
@@ -49,7 +50,7 @@ contract RaffleTest is Test {
     function setUp() external {
         deployer = new DeployRaffle();
         (raffle, helperConfig) = deployer.run();
-        (entranceFee, interval, vrfCoordinatorAddress, subscriptionId, gasLane, callbackGasLimit,) =
+        (entranceFee, interval, vrfCoordinatorAddress, subscriptionId, gasLane, callbackGasLimit,, deployerKey) =
             helperConfig.activeNetworkConfig();
 
         // Let's give player some money
