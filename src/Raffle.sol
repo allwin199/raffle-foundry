@@ -84,6 +84,7 @@ contract Raffle is VRFConsumerBaseV2, AutomationCompatible {
     //////////////////////////////////////////////////////////
     event EnteredRaffle(address indexed player);
     event PickedWinner(address indexed winner);
+    event RequestedRaffleWinner(uint256 indexed requestId);
 
     //////////////////////////////////////////////////////////
     //////////////////////  Functions  ///////////////////////
@@ -227,9 +228,14 @@ contract Raffle is VRFConsumerBaseV2, AutomationCompatible {
         // change raffle_state to calculating
         s_currentRaffleState = RaffleState.CALCULATING;
 
-        i_vRFCoordinatorV2Interface.requestRandomWords(
+        uint256 requestId = i_vRFCoordinatorV2Interface.requestRandomWords(
             i_gasLane, i_subscriptionId, REQUEST_CONFIRMATIONS, i_callbackGasLimit, NUM_WORDS
         );
+
+        emit RequestedRaffleWinner(requestId);
+        // we are explicitly emitting RequestedRaffleWinner event
+        // Note: requestRandomWords() also emits an event
+        // Emitted events cannot be accessed inside the smart contract but can be accessed in Tests
     }
 
     //////////////////////////////////////////////////////////
