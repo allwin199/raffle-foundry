@@ -20,4 +20,6 @@ lib/
 .env
 
 # Test Coverage
+coverage
 coverage.txt
+lcov.info
