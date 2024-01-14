@@ -12,14 +12,6 @@ import {Raffle} from "../../src/Raffle.sol";
 import {VRFCoordinatorV2Interface} from "@chainlink/contracts/src/v0.8/vrf/interfaces/VRFCoordinatorV2Interface.sol";
 import {VRFCoordinatorV2Mock} from "@chainlink/contracts/src/v0.8/vrf/mocks/VRFCoordinatorV2Mock.sol";
 
-//////////////////////////////////////////////////////////
-////////////////////  Custom Errors  /////////////////////
-//////////////////////////////////////////////////////////
-error Raffle__NotEnoughETHSent();
-error Raffle__Sending_RaffleAmountTo_WinnerFailed();
-error Raffle__NotOpen();
-error Raffle__UpkeepNotNeeded(uint256 currentBalance, uint256 numPlayers, uint256 raffleState);
-
 contract RaffleTest is Test {
     //////////////////////////////////////////////////////////
     ////////////////  Storage Variables  /////////////////////
