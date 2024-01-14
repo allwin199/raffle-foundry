@@ -41,7 +41,7 @@ contract HelperConfig is Script {
         }
     }
 
-    function getETHMainnetConfig() private view returns (NetworkConfig memory) {
+    function getETHMainnetConfig() public view returns (NetworkConfig memory) {
         NetworkConfig memory mainnetConfig = NetworkConfig({
             entranceFee: ENTRANCE_FEE,
             interval: INTERVAL,
@@ -56,7 +56,7 @@ contract HelperConfig is Script {
         return mainnetConfig;
     }
 
-    function getSepoliaConfig() private view returns (NetworkConfig memory) {
+    function getSepoliaConfig() public view returns (NetworkConfig memory) {
         NetworkConfig memory sepoliaConfig = NetworkConfig({
             entranceFee: ENTRANCE_FEE,
             interval: INTERVAL,
@@ -72,7 +72,7 @@ contract HelperConfig is Script {
     }
 
     // To get vrfCoordinatorAddress locally we have to deploy docs
-    function getOrCreateAnvilConfig() private returns (NetworkConfig memory) {
+    function getOrCreateAnvilConfig() public returns (NetworkConfig memory) {
         if (activeNetworkConfig.vrfCoordinatorAddress != address(0)) {
             return activeNetworkConfig;
         }
