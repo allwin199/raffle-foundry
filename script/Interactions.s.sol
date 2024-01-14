@@ -28,7 +28,7 @@ contract CreateSubscription is Script {
         return subId;
     }
 
-    function createSubscriptionUsingConfig() private returns (uint64) {
+    function createSubscriptionUsingConfig() public returns (uint64) {
         HelperConfig helperConfig = new HelperConfig();
         (,, address vrfCoordinatorAddress,,,,, address deployer) = helperConfig.activeNetworkConfig();
         return createSubscription(vrfCoordinatorAddress, deployer);
@@ -69,7 +69,7 @@ contract FundSubscription is Script {
         }
     }
 
-    function fundSubscriptionUsingConfig() private {
+    function fundSubscriptionUsingConfig() public {
         HelperConfig helperConfig = new HelperConfig();
         (,, address vrfCoordinatorAddress, uint64 subId,,, address link, address deployer) =
             helperConfig.activeNetworkConfig();
@@ -96,7 +96,7 @@ contract AddConsumer is Script {
         vm.stopBroadcast();
     }
 
-    function createConsumerUsingConfig(address raffle) private {
+    function addConsumerUsingConfig(address raffle) public {
         HelperConfig helperConfig = new HelperConfig();
         (,, address vrfCoordinatorAddress, uint64 subId,,,, address deployer) = helperConfig.activeNetworkConfig();
         addConsumer(subId, raffle, vrfCoordinatorAddress, deployer);
@@ -104,6 +104,6 @@ contract AddConsumer is Script {
 
     function run() external {
         address raffle = DevOpsTools.get_most_recent_deployment("Raffle", block.chainid);
-        createConsumerUsingConfig(raffle);
+        addConsumerUsingConfig(raffle);
     }
 }
