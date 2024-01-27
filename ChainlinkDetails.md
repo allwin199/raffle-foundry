@@ -18,14 +18,13 @@
 ## Add Consumer
 
 -   Deploy the raffle contract and add it as consumer contract.
--   `https://vrf.chain.link/sepolia/8903`
+-   Subscription Id [8903](https://vrf.chain.link/sepolia/8903)
 
 ## Chainlink Automation
 
 -   Register new upkeep
 
--   latest upkeep `https://automation.chain.link/sepolia`
+-   [To Register upkeep](https://automation.chain.link/sepolia)
 -   connect to wallet
 
--   Upkeep page
--   `https://automation.chain.link/sepolia/84554326062970522144793657412754113450260205225387308787670720127962466893438`
+-   [Current Upkeep](https://automation.chain.link/sepolia/84554326062970522144793657412754113450260205225387308787670720127962466893438)
