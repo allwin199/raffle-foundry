@@ -43,8 +43,8 @@ contract DeployRaffle is Script {
             new Raffle(entranceFee, interval, vrfCoordinatorAddress, subscriptionId, gasLane, callbackGasLimit);
         vm.stopBroadcast();
 
-        AddConsumer addConsumer = new AddConsumer();
-        addConsumer.addConsumer(subscriptionId, address(raffle), vrfCoordinatorAddress, deployer);
+        // AddConsumer addConsumer = new AddConsumer();
+        // addConsumer.addConsumer(subscriptionId, address(raffle), vrfCoordinatorAddress, deployer);
 
         return (raffle, helperConfig);
     }
