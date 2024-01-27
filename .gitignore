@@ -23,3 +23,5 @@ lib/
 coverage
 coverage.txt
 lcov.info
+
+.DS_Store

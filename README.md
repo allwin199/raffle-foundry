@@ -88,7 +88,7 @@ This will setup a ChainlinkVRF Subscription for you. If you already have one, up
 
 -   [Documentation](https://docs.chain.link/chainlink-automation/compatible-contracts)
 
--   Go to [automation.chain.link](https://automation.chain.link/new) and register a new upkeep. Choose `Custom logic` as your trigger mechanism for automation. Your UI will look something like this once completed:
+-   Go to [automation.chain.link](https://automation.chain.link/new) and register a new upkeep. Choose `Custom logic` as your trigger mechanism for automation.
 
 ## Estimate gas
 
