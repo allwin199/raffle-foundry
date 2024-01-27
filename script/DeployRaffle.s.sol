@@ -15,6 +15,8 @@ import {CreateSubscription, FundSubscription, AddConsumer} from "./Interactions.
 /// @author Prince Allwin
 /// @notice Using DeployRaffle contract raffle can be programatically deployed
 contract DeployRaffle is Script {
+    uint256 private manualSubscription = 0;
+
     function run() external returns (Raffle, HelperConfig) {
         HelperConfig helperConfig = new HelperConfig();
         (
@@ -36,6 +38,8 @@ contract DeployRaffle is Script {
             /// @dev Funding Subscription
             FundSubscription fundSubscription = new FundSubscription();
             fundSubscription.fundSubscription(vrfCoordinatorAddress, subscriptionId, link, deployer);
+
+            manualSubscription = 1;
         }
 
         vm.startBroadcast(deployer);
@@ -43,8 +47,10 @@ contract DeployRaffle is Script {
             new Raffle(entranceFee, interval, vrfCoordinatorAddress, subscriptionId, gasLane, callbackGasLimit);
         vm.stopBroadcast();
 
-        // AddConsumer addConsumer = new AddConsumer();
-        // addConsumer.addConsumer(subscriptionId, address(raffle), vrfCoordinatorAddress, deployer);
+        if (manualSubscription == 1) {
+            AddConsumer addConsumer = new AddConsumer();
+            addConsumer.addConsumer(subscriptionId, address(raffle), vrfCoordinatorAddress, deployer);
+        }
 
         return (raffle, helperConfig);
     }
