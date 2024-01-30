@@ -11,6 +11,7 @@ import {HelperConfig} from "../../script/HelperConfig.s.sol";
 import {Raffle} from "../../src/Raffle.sol";
 import {VRFCoordinatorV2Interface} from "@chainlink/contracts/src/v0.8/vrf/interfaces/VRFCoordinatorV2Interface.sol";
 import {VRFCoordinatorV2Mock} from "@chainlink/contracts/src/v0.8/vrf/mocks/VRFCoordinatorV2Mock.sol";
+import {MocksSendFailed} from "../mocks/MocksSendFailed.sol";
 
 contract RaffleTest is Test {
     //////////////////////////////////////////////////////////
@@ -318,5 +319,30 @@ contract RaffleTest is Test {
         uint256 winnerBalanceAfterEntering = STARTING_PLAYER_BALANCE - entranceFee;
         uint256 winnerBalanceAfterWinning = winnerBalanceAfterEntering + prize;
         assertEq(winnerBalance, winnerBalanceAfterWinning);
+    }
+
+    function test_SendingMoneyTo_WinnerFailed() public {
+        MocksSendFailed mocksSendFailed = new MocksSendFailed();
+
+        vm.deal(address(mocksSendFailed), STARTING_PLAYER_BALANCE);
+
+        vm.startPrank(address(mocksSendFailed));
+        raffle.enterRaffle{value: entranceFee}();
+        vm.stopPrank();
+
+        vm.warp(block.timestamp + interval + 10);
+        vm.roll(block.number + 1);
+
+        // let's get requestId using recordLogs
+        vm.recordLogs();
+        raffle.performUpkeep("");
+
+        Vm.Log[] memory entries = vm.getRecordedLogs();
+        bytes32 requestId = entries[1].topics[1];
+
+        // vm.expectRevert(Raffle.Raffle__Sending_RaffleAmountTo_WinnerFailed.selector);
+        // pretend to be the chainlink vrf to get random number & pick winner
+        // fulfillRandomWords(uint256 _requestId, address _consumer) inside vrfMock
+        VRFCoordinatorV2Mock(vrfCoordinatorAddress).fulfillRandomWords(uint256(requestId), address(raffle));
     }
 }
