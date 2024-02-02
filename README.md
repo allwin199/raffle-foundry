@@ -91,12 +91,13 @@ forge snapshot
 
 And you'll see an output file called `.gas-snapshot`
 
-# Formatting
+---
 
-To run code formatting:
+## Demo
 
-```sh
-forge fmt
-```
+[Raffle front-end](https://raffle-frontend-new.vercel.app/)  
+[Github](https://github.com/allwin199/raffle-frontend)
+
+![Raffle](./raffle.png)
 
 # Thank you :)
